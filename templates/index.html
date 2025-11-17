@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saarthi Banking Assistant</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 700px; margin: 2rem auto; background: #f4f7f6; }
+        .chat-container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; text-align: center; margin-bottom: 1.5rem; }
+        
+        .chat-box { 
+            border: 1px solid #e1e1e1; 
+            padding: 1rem; 
+            height: 400px; 
+            overflow-y: auto; 
+            margin-bottom: 1rem; 
+            background: #fff;
+            border-radius: 8px;
+        }
+
+        .message { margin: 10px 0; padding: 10px 15px; border-radius: 15px; max-width: 80%; line-height: 1.5; }
+        .user { background: #007bff; color: white; margin-left: auto; text-align: right; border-bottom-right-radius: 2px; }
+        .bot { background: #e9ecef; color: #333; margin-right: auto; border-bottom-left-radius: 2px; }
+        
+        .meta-info { font-size: 0.75rem; margin-top: 5px; display: block; opacity: 0.8; }
+        
+        .input-area { display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
+        button { padding: 10px 25px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #218838; }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <h2>🤖 Saarthi Banking Assistant</h2>
+        <div class="chat-box" id="chatBox">
+            <div class="message bot">Hello! I am Saarthi. Ask me about UPI, NEFT, or Loans.</div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="questionInput" placeholder="Type your question here..." onkeypress="handleEnter(event)">
+            <button onclick="askSaarthi()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function handleEnter(e) {
+            if (e.key === 'Enter') askSaarthi();
+        }
+
+        async function askSaarthi() {
+            const input = document.getElementById("questionInput");
+            const chatBox = document.getElementById("chatBox");
+            const question = input.value.trim();
+
+            if (!question) return;
+
+            // 1. Show User Question
+            chatBox.innerHTML += `<div class="message user">${question}</div>`;
+            input.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                // 2. Call Python API
+                const res = await fetch("http://127.0.0.1:5000/faq-answer", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ question: question })
+                });
+                const data = await res.json();
+
+                // 3. Convert Confidence to Percentage for better readability
+                const accuracy = (data.confidence * 100).toFixed(1) + "%";
+                
+                // 4. Show Bot Answer
+                const botHtml = `
+                    <div class="message bot">
+                        ${data.answer}
+                        <span class="meta-info">
+                            🎯 Match Confidence: <strong>${accuracy}</strong>
+                        </span>
+                    </div>`;
+                
+                chatBox.innerHTML += botHtml;
+
+            } catch (error) {
+                chatBox.innerHTML += `<div class="message bot" style="color:red">Error: Could not connect to Saarthi. Is app.py running?</div>`;
+            }
+            
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
