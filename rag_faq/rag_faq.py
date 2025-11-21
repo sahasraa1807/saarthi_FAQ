@@ -59,7 +59,10 @@ def get_faq_answer(user_question):
 
     # --- Step B: Hybrid Logic ---
     # Threshold: 0.50 (If local match is good enough, use it)
-    if confidence >= 0.50:
+   # --- Step B: Hybrid Logic ---
+    # CHANGE THIS NUMBER: 0.50 -> 0.75
+    if confidence >= 0.75: 
+        print(f"✅ High confidence ({confidence:.2f}). Using Local FAQ.") # <--- Add this print to see what happens
         return {
             "answer": best_match["answer"],
             "question": best_match["question"],
